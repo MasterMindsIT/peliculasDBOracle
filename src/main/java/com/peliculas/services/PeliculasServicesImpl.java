@@ -2,9 +2,11 @@ package com.peliculas.services;
 
 import java.util.List;
 
+
 import org.springframework.stereotype.Service;
 
 import com.peliculas.entities.PeliculasEntity;
+import com.peliculas.exceptions.PeliculasNotFoundException;
 import com.peliculas.repositories.PeliculasRepository;
 import com.peliculas.services.interfaces.IPeliculas;
 
@@ -22,7 +24,7 @@ public class PeliculasServicesImpl implements IPeliculas{
 
     @Override
     public PeliculasEntity getPeliculaById(long id) {
-        return peliculasRepository.findById(id).orElseThrow();
+        return peliculasRepository.findById(id).orElseThrow(()->new PeliculasNotFoundException(id));
     }
 
 }

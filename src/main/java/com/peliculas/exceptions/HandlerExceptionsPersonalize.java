@@ -1,5 +1,6 @@
 package com.peliculas.exceptions;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +17,8 @@ public class HandlerExceptionsPersonalize {
         Map<String, Object> body = new HashMap<>();
         body.put("Error", "Not Found");
         body.put("Status", HttpStatus.NOT_FOUND.value());
-        body.put("Mensaje", e);
+        body.put("timestamp", LocalDateTime.now());
+        body.put("Mensaje", e.getMessage());
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
 
