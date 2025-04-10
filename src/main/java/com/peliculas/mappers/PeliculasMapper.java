@@ -1,12 +1,14 @@
 package com.peliculas.mappers;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingConstants;
 import org.mapstruct.factory.Mappers;
 
 import com.peliculas.dtos.PeliculasDTO;
 import com.peliculas.entities.PeliculasEntity;
 
-@Mapper(componentModel = "spring")
+
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface PeliculasMapper {
 PeliculasMapper INSTANCE = Mappers.getMapper(PeliculasMapper.class);
 
