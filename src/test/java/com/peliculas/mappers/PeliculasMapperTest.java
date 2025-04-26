@@ -36,4 +36,15 @@ class PeliculasMapperTest {
         assertThat(entity.id).isEqualTo(1L);
         assertThat(entity.titulo).isEqualTo("Matrix");
     }
+    @Test
+    void testToDTONull() {
+        PeliculasDTO dto = mapper.toDTO(null);
+        assertThat(dto).isNull();
+    }
+
+    @Test
+    void testToEntityNull() {
+        PeliculasEntity entity = mapper.toEntity(null);
+        assertThat(entity).isNull();
+    }
 }

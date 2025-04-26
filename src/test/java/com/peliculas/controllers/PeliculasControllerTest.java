@@ -1,10 +1,13 @@
 package com.peliculas.controllers;
 
+import org.springframework.boot.autoconfigure.hateoas.HypermediaAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,9 +25,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.peliculas.dtos.PeliculasDTO;
-import com.peliculas.services.interfaces.IPeliculas;
-@WebMvcTest(PeliculasController.class)
+import com.peliculas.services.interfaces.IPeliculas; 
+//@WebMvcTest(PeliculasController.class)
+@SpringBootTest
 @AutoConfigureMockMvc(addFilters = false) // Desactiva seguridad en los tests
+@Import(HypermediaAutoConfiguration.class)
 public class PeliculasControllerTest {
      @Autowired
     private MockMvc mockMvc;
@@ -48,9 +53,36 @@ public class PeliculasControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("Ok"))
                 .andExpect(jsonPath("$.cantidad").value(1))
-                .andExpect(jsonPath("$.dataCollect[0].titulo").value("Matrix"));
+                .andExpect(jsonPath("$.dataCollect[0].titulo").value("Matrix"))
+                .andExpect(jsonPath("$.dataCollect[0].links[?(@.rel=='self')].href").value("http://localhost/peliculas/1"))
+                .andExpect(jsonPath("$.dataCollect[0].links[?(@.rel=='delete')].href").value("http://localhost/peliculas/1"))
+                .andExpect(jsonPath("$.dataCollect[0].links[?(@.rel=='update')].href").value("http://localhost/peliculas/1"))
+                .andExpect(jsonPath("$.dataCollect[0].links[?(@.rel=='all')].href").value("http://localhost/peliculas"));
+                
     }
 
+    @Test
+    void testgetPelicula() throws Exception {   
+         long id = 1L;
+    PeliculasDTO pelicula = new PeliculasDTO(id, "Interestelar 2", 2020, "Christopher Nolan", "Ciencia ficción", "Otro grupo de astronautas...");
+
+    Mockito.when(peliculasServicesImpl.getPeliculaById(id)).thenReturn(pelicula);
+
+    mockMvc.perform(get("/peliculas/{id}", id))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("Ok"))
+            .andExpect(jsonPath("$.cantidad").value(1))
+            .andExpect(jsonPath("$.data.titulo").value("Interestelar 2"))
+            .andExpect(jsonPath("$.data.links[?(@.rel=='self')].href").value("http://localhost/peliculas/1"))
+            .andExpect(jsonPath("$.data.links[?(@.rel=='delete')].href").value("http://localhost/peliculas/1"))
+            .andExpect(jsonPath("$.data.links[?(@.rel=='update')].href").value("http://localhost/peliculas/1"))
+            .andExpect(jsonPath("$.data.links[?(@.rel=='all')].href").value("http://localhost/peliculas"));
+
+
+    }
+
+   
+     
     @Test
     void testAllPeliculas_Sin_Peliculas() throws Exception {
         Mockito.when(peliculasServicesImpl.getAllPeliculas()).thenReturn(List.of());
@@ -61,20 +93,8 @@ public class PeliculasControllerTest {
                 .andExpect(jsonPath("$.cantidad").value(0))
                 .andExpect(jsonPath("$.mensaje").value("No se encontraron datos para mostrar"));
     }
-    @Test
-    void testgetPelicula() throws Exception {
-        //buscar una pelicula por id
-        long id = 1L;
-        PeliculasDTO pelicula = new PeliculasDTO(id, "Matrix", 1999, "Wachowski", "Sci-fi", "Neo descubre la verdad");
-        // Simula que al llamar al servicio con ese ID, devuelve el objeto correspondiente
-        Mockito.when(peliculasServicesImpl.getPeliculaById(id)).thenReturn(pelicula);
-        mockMvc.perform(get("/peliculas/{id}", id))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("Ok"))
-                .andExpect(jsonPath("$.cantidad").value(1))
-                .andExpect(jsonPath("$.data.titulo").value("Matrix"));
-
-    }
+ 
+    
     @Test
     void testCreatePelicula()  throws Exception{
         // Crea un objeto PeliculasDTO para simular la entrada
@@ -91,7 +111,12 @@ public class PeliculasControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("Ok"))
         .andExpect(jsonPath("$.cantidad").value(1))
-        .andExpect(jsonPath("$.data.titulo").value("Matrix"));
+        .andExpect(jsonPath("$.data.titulo").value("Matrix"))
+        .andExpect(jsonPath("$.data.links[?(@.rel=='self')].href").value("http://localhost/peliculas/1"))
+        .andExpect(jsonPath("$.data.links[?(@.rel=='delete')].href").value("http://localhost/peliculas/1"))
+        .andExpect(jsonPath("$.data.links[?(@.rel=='update')].href").value("http://localhost/peliculas/1"))
+        .andExpect(jsonPath("$.data.links[?(@.rel=='all')].href").value("http://localhost/peliculas"));
+
     }
 
     @Test
@@ -112,9 +137,14 @@ public class PeliculasControllerTest {
         .andExpect(jsonPath("$.cantidad").value(1))
         .andExpect(jsonPath("$.data.titulo").value("Matrix Reloaded"))
         .andExpect(jsonPath("$.data.anio").value(2003))
-        .andExpect(jsonPath("$.data.director").value("Wachowski"));
+        .andExpect(jsonPath("$.data.director").value("Wachowski"))
+        .andExpect(jsonPath("$.data.links[0].href").value("http://localhost/peliculas/1"))
+        .andExpect(jsonPath("$.data.links[1].href").value("http://localhost/peliculas/1"))
+        .andExpect(jsonPath("$.data.links[2].href").value("http://localhost/peliculas/1"))
+        .andExpect(jsonPath("$.data.links[3].href").value("http://localhost/peliculas"));
+                                        // Sin ?(@.rel=='delete' y solo por indice de los enlaces)
     }
-
+    
     @Test
     void testDeletePelicula_Encuentra_Id() throws Exception {
         long id = 1L;
@@ -140,5 +170,5 @@ public class PeliculasControllerTest {
             .andExpect(jsonPath("$.status").value("204"))
             .andExpect(jsonPath("$.cantidad").value(0))
             .andExpect(jsonPath("$.mensaje").value("No se encontro el ID=1 a eliminar"));
-    }
+    } 
 }
